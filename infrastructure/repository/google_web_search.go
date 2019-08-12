@@ -34,6 +34,10 @@ func (rep *GoogleWebSearchRepository) Search(query model.SearchQuery) ([]model.I
 			Text:       img.PageTitle,
 			WebPageURL: img.PageURL,
 		})
+
+		if query.Limit > 0 && len(images) >= query.Limit {
+			break
+		}
 	}
 
 	return images, nil
