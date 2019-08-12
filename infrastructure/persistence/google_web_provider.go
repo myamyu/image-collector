@@ -1,11 +1,28 @@
 package persistence
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/url"
 	"net/http"
+	"net/url"
+	"strings"
+
 	"github.com/PuerkitoBio/goquery"
 )
+
+// ImageSearchResponse Google Image Searchの検索結果JSON
+type ImageSearchResponse struct {
+	ImageURL         string `json:"ou"`
+	ImageType        string `json:"ity"`
+	ImageWidth       int    `json:"ow"`
+	ImageHeight      int    `json:"oh"`
+	ImageThumbURL    string `json:"tu"`
+	ImageThumbWidth  int    `json:"tw"`
+	ImageThumbHeight int    `json:"th"`
+	PageTitle        string `json:"pt"`
+	PageURL          string `json:"ru"`
+	SiteTitle        string `json:"st"`
+}
 
 type GoogleWebProvider struct {
 }
@@ -14,7 +31,7 @@ func NewGoogleWebProvider() *GoogleWebProvider {
 	return &GoogleWebProvider{}
 }
 
-func (p *GoogleWebProvider) SearchImage(q string) ([]string, error) {
+func (p *GoogleWebProvider) SearchImage(q string) ([]ImageSearchResponse, error) {
 	reqURL := fmt.Sprintf("https://www.google.co.jp/search?q=%s&tbm=isch", url.QueryEscape(q))
 
 	req, err := http.NewRequest("GET", reqURL, nil)
@@ -22,25 +39,45 @@ func (p *GoogleWebProvider) SearchImage(q string) ([]string, error) {
 		return nil, err
 	}
 
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36")
+	req.Header.Add("User-Agent",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromResponse(resp)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
+	// ".rg_meta.notranslate" にはJSONが詰まっている
 	selection := doc.Find(".rg_meta.notranslate")
-	var dataArray []string
-
+	var (
+		dataArray    []ImageSearchResponse
+		errTextArray []string
+	)
 	selection.Each(func(index int, s *goquery.Selection) {
-		dataArray = append(dataArray, s.Text())
+		innerText := s.Text()
+
+		img := new(ImageSearchResponse)
+		if err := json.Unmarshal(([]byte)(innerText), img); err != nil {
+			errTextArray = append(errTextArray, innerText)
+			return
+		}
+
+		dataArray = append(dataArray, *img)
 	})
 
-	return dataArray, nil
+	var parseError error
+	if len(errTextArray) == 0 {
+		parseError = nil
+	} else {
+		parseError = fmt.Errorf("JSON parse error[%s]", strings.Join(errTextArray, ", "))
+	}
+
+	return dataArray, parseError
 }
