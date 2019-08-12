@@ -30,9 +30,11 @@ func (rep *GoogleWebSearchRepository) Search(query model.SearchQuery) ([]model.I
 
 	for _, img := range res {
 		images = append(images, model.ImageInfo{
-			ImageURL:   img.ImageURL,
-			Text:       img.PageTitle,
-			WebPageURL: img.PageURL,
+			ImageURL:      img.ImageURL,
+			ImageType:     img.ImageType,
+			Text:          img.PageTitle,
+			WebPageURL:    img.PageURL,
+			ImageThumbURL: img.ImageThumbURL,
 		})
 
 		if query.Limit > 0 && len(images) >= query.Limit {
