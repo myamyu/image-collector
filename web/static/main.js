@@ -5,6 +5,32 @@ class ImageCollectorElement extends HTMLElement {
     const shadowRoot = this.attachShadow({mode: 'open'});
     shadowRoot.innerHTML = `
       <style>
+        .result-images {
+          display: flex;
+          flex-wrap: wrap;
+          width: 98vw;
+          margin: 0;
+          padding: 0;
+          justify-content: space-between;
+        }
+        .result-img {
+          margin: 0 0 1vw;
+          padding: 0;
+          display: block;
+          width: 19vw;
+          height: 19vw;
+        }
+        .page-link {
+          display: block;
+          width: 100%;
+          height: 100%;
+          text-decoration: none;
+        }
+        .result-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
       </style>
       <div class="search-result"></div>
     `;
@@ -24,7 +50,6 @@ class ImageCollectorElement extends HTMLElement {
   result(images) {
     this._results.innerHTML = `
       <h3><span class="site-name">${this._siteName}</span>で<span class="search-word">${this._searchWord}</span>の検索結果</h3>
-      <hr>
       <div class="results-num"><span class="results-num-val">${images.length}</span>件</div>
       <ul class="result-images"></ul>
     `;
@@ -33,7 +58,7 @@ class ImageCollectorElement extends HTMLElement {
       const li = document.createElement('li');
       li.classList.add('result-img')
       li.innerHTML = `
-        <div><img src="${img.thumb_url}" alt="${img.text}"></div>
+        <a href="${img.web_page_url}" class="page-link"><img src="${img.thumb_url}" alt="${img.text}"></a>
       `;
       resultImages.appendChild(li);
     });
@@ -63,7 +88,7 @@ customElements.define('image-collector', ImageCollectorElement);
     const result = d.getElementById('searchResults');
     result.setAttribute('site-name', d.querySelector('[name=s]').value);
     result.setAttribute('search-word', d.querySelector('[name=q]').value);
-    result.setAttribute('limit', d.querySelector('[name=l]').value);
+    result.setAttribute('limit', '100');
 
     result.search();
   });

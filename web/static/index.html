@@ -10,11 +10,10 @@
   <div class="search-form">
     <input type="text" name="s" placeholder="サイト（例：twitter.com）">
     <input type="text" name="q" placeholder="検索ワード（例：スタバなう）">
-    <input type="number" name="l" value="30" max="100" min="1">
     <button id="searchButton">検索</button>
   </div>
   <hr>
-  <image-collector id="searchResults"></image-collector>
+  <image-collector id="searchResults" site-name="twitter.com" search-word="スタバなう" limit="100"></image-collector>
   <script src="main.js"></script>
 </body>
 </html>
