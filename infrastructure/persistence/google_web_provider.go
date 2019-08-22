@@ -32,7 +32,14 @@ func NewGoogleWebProvider() *GoogleWebProvider {
 }
 
 func (p *GoogleWebProvider) SearchImage(q string) ([]ImageSearchResponse, error) {
-	reqURL := fmt.Sprintf("https://www.google.co.jp/search?q=%s&tbm=isch", url.QueryEscape(q))
+	tbs := fmt.Sprintf("tbs=isz:%s,islt:%s,itp:%s,qdr:%s",
+		"lt",    // 最小サイズ
+		"2mp",   // 200万画素
+		"photo", // 写真
+		"m",     // 1か月以内
+	)
+
+	reqURL := fmt.Sprintf("https://www.google.co.jp/search?q=%s&tbm=isch&%s", url.QueryEscape(q), tbs)
 
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
