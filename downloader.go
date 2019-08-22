@@ -39,7 +39,7 @@ func main() {
 
 	query := model.SearchQuery{
 		SiteDomain: "twitter.com",
-		SearchWord: "スタバわず",
+		SearchWord: "すたばわず",
 		Limit:      50,
 	}
 
@@ -59,11 +59,15 @@ func main() {
 		return
 	}
 	re := regexp.MustCompile("[/\\\\<>\\?%#]")
+	wordDir := "_empty_"
+	if query.SearchWord != "" {
+		wordDir = re.ReplaceAllString(query.SearchWord, "_")
+	}
 	distDir := filepath.Join(
 		absPath,
 		"download",
 		query.SiteDomain,
-		re.ReplaceAllString(query.SearchWord, "_"),
+		wordDir,
 	)
 	if err := os.MkdirAll(distDir, 0777); err != nil {
 		log.Fatalf("エラー！！！\n%+v", err)
